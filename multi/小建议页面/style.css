@@ -1,0 +1,568 @@
+/* ============================================================
+   2026 中国睡眠白皮书 · 互动房间
+   ------------------------------------------------------------
+   图层：背景(1) < 物品(2) < 动画(3) < 遮罩(40) < 弹层(50)
+   坐标：全部百分比，随舞台等比缩放永不错位
+   设计变量：与数据可视化页共用 ../shared-sleep-tokens.css，
+            ============================================================ */
+
+/* 跨页面共享变量：夜色底、羊皮纸色阶、圆角、字体栈都由它提供，
+   保证「数据页 → 建议页」来回切换时视觉语言不断层 */
+@import url("../shared-sleep-tokens.css");
+
+:root{
+  --ease: cubic-bezier(.22,.61,.36,1);
+  --ink: #2A2F3A;
+  /* 卡片换成羊皮纸底之后，文字改用暖褐"墨色"，最浅/最深纸面都满足 4.5:1 */
+  --paper-ink: #4A3720;          /* 正文 */
+  --paper-ink-strong: #533617;   /* 标题 */
+  --paper-accent: #96331A;       /* 数据高亮 */
+  --paper-tip: #6B4A22;          /* 小建议文字 */
+  --card-w: 1100;                /* paper-card 原始像素宽 */
+  --card-h: 1161;                /* paper-card 原始像素高（比例一致 → 纸面永不变形） */
+  --fx-dur: .62s;                /* 物品飞向屏幕中央的时长 */
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+html,body{
+  width:100%; height:100%;
+  overflow:hidden;
+  background:#0c1119;            /* 舞台比例外的留边底色 */
+  font-family:var(--slp-font-sans);   /* 与数据页统一字体栈 */
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------------- 舞台：按原图比例 16:9 锁死，等比缩放居中 ----------------
+   用 min() 同时约束宽高，保证整张背景图始终完整可见 */
+.stage{
+  position:absolute;
+  left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  width:min(100vw, calc(100vh * 16 / 9));
+  height:min(100vh, calc(100vw * 9 / 16));
+  overflow:hidden;
+  box-shadow:0 24px 70px rgba(0,0,0,.5);
+  isolation:isolate;              /* 建立独立层叠上下文，遮罩不会外溢 */
+}
+
+/* ---------------- 通用图层 ---------------- */
+.layer{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+}
+.layer--bg{ z-index:1; }
+.layer--items{ z-index:2; }
+.layer--fx{ z-index:3; pointer-events:none; }
+
+/* ---------------- 1. 背景层：三张图叠放，只用 opacity 切换 ---------------- */
+.layer--bg .bg{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:cover;
+  opacity:0;
+  transition:opacity .6s var(--ease);
+  pointer-events:none;            /* 背景层永不接点击 */
+  user-select:none;
+  -webkit-user-drag:none;
+}
+.layer--bg .bg[data-on="true"]{ opacity:1; }
+
+/* ---------------- 2. 物品层：PNG 本身就是按钮 ----------------
+   left/top/width/height 全部百分比 → 舞台缩放时位置与热区永远一致 */
+.item{
+  position:absolute;
+  cursor:pointer;
+  touch-action:manipulation;               /* 去掉移动端 300ms 点击延迟 */
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  -webkit-user-drag:none;
+  transform-origin:50% 50%;                /* 缩放 / 位移都以中心为基准 */
+  transition:opacity .45s var(--ease), filter .45s var(--ease);
+  will-change:transform;
+}
+.item .item-img{
+  display:block;
+  width:100%; height:100%;
+  object-fit:contain;
+  pointer-events:none;                     /* 点击统一由 wrapper 接收 */
+  user-select:none;
+  -webkit-user-drag:none;
+  /* 光照过渡时长与背景 0.6s 交叉淡入同步，切换时画面是一起暗下去的 */
+  transition:filter .6s var(--ease);
+}
+.item:focus{ outline:none; }
+
+/* ---------------- 物品跟随环境光变暗 ----------------
+   PNG 本身是"有光时"画出来的，夜里关灯后直接贴上去会浮在画面上、特别亮。
+   判断标准只有一个：屋里此刻有没有光源。
+     有光 = 白天 / 黑夜·开灯   → 原样，和白天一个亮度
+     没光 = 黑夜·关灯          → 明显压暗并降饱和，东西只剩轮廓
+   所以开灯那档不做任何压暗 —— 灯已经亮了，物品就该跟着亮起来。
+   所有物品共用一套参数，房间才像处在同一道光里；不是只改枕头。 */
+.stage[data-env="night-off"] .item .item-img{
+  filter:brightness(.50) saturate(.68) contrast(.96);
+}
+
+/* 被放大展示的那件物品回到正常亮度 —— 它是当前的"主角"，
+   这时遮罩已经把整个房间压暗了，主角亮一点才看得清 */
+.stage .layer--items .item.is-zoomed .item-img{
+  filter:brightness(1) saturate(1) contrast(1);
+}
+/* 书本弹出大图同样跟随环境（关灯才压暗，规则里要连 drop-shadow 一起写，否则投影会丢） */
+.stage[data-env="night-off"] .fx-book{
+  filter:drop-shadow(0 30px 64px rgba(0,0,0,.5)) brightness(.7) saturate(.78);
+}
+.item:focus-visible{ outline:3px solid #7FB2F0; outline-offset:4px; border-radius:10px; }
+
+/* ---------------- 最小可点区 44x44px（视觉上完全不可见） ----------------
+   用 .item 自己的 ::before 撑开：
+   · 平时 = 物品本身大小（等比缩放，热区与图片 1:1 对齐，绝不错位）
+   · 物品被缩到 44px 以下时（比如手机竖屏），::before 自动补到 44x44
+   · 它是 .item 的子元素，点它同样冒泡给 .item，不需要单独的 .hotspot 层 */
+.item::before{
+  content:"";
+  position:absolute;
+  left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  width:100%; height:100%;
+  min-width:44px; min-height:44px;
+  background:transparent;
+  pointer-events:auto;
+}
+/* 下面两个物品在手机竖屏上会被邻居"抢走"半边热区，所以各自规定一个
+   定向扩展方向：只往没有邻居的那一侧撑，保证自己始终有完整的 44x44，
+   同时不去压别人的地盘。桌面尺寸下 min-* 不触发，盒子仍等于图片本身。 */
+/* 褪黑素：左边是空地，右边紧挨眼罩 → 只往左撑（盒子右边缘贴齐瓶子右边缘） */
+.item--melatonin::before{ left:100%; transform:translate(-100%,-50%); }
+/* 书本：贴着画面最下沿，往下撑会出舞台 → 只往上撑（盒子下边缘贴齐书的下边缘） */
+.item--book::before{ top:100%; transform:translate(-50%,-100%); }
+
+/* ---------------- 台灯 / 窗户的点击反馈 ----------------
+   这两样东西的"实物"在背景图里，没有 PNG 可以做缩放回弹。
+   所以它们的 .tap-feedback 用一次柔光脉冲表达（0.2s 亮一下随即淡出），
+   紧接着才是各自真正的动作（灯：两张夜景互切 / 窗：白天黑夜互切）。
+   只用一个 ::after 伪元素，不额外加 DOM，也不改动背景图。 */
+.item--lamp::after,
+.item--window::after{
+  content:"";
+  position:absolute;
+  left:50%; top:50%;
+  transform:translate(-50%,-50%);
+  width:100%; height:100%;
+  border-radius:50%;
+  opacity:0;
+  pointer-events:none;
+  mix-blend-mode:screen;
+}
+/* 台灯：柔光对准灯罩（灯罩在热区的上部） */
+.item--lamp::after{
+  top:22%;
+  width:190%; height:50%;
+  background:radial-gradient(circle at 50% 50%,
+    rgba(255,238,190,.9) 0%,
+    rgba(255,226,155,.45) 42%,
+    rgba(255,214,120,0)   72%);
+}
+/* 窗户：柔光铺满整扇窗，偏冷色调 */
+.item--window::after{
+  border-radius:20px;
+  background:radial-gradient(ellipse at 50% 45%,
+    rgba(205,228,255,.55) 0%,
+    rgba(180,212,255,.2)  52%,
+    rgba(180,212,255,0)   78%);
+}
+/* 反馈瞬间亮起（0.2s 后随 .tap-feedback 结束自然淡出） */
+.item.tap-feedback::after{ animation:glowPulse .2s var(--ease); }
+@keyframes glowPulse{
+  0%{ opacity:0; } 45%{ opacity:1; } 100%{ opacity:0; }
+}
+
+/* ---------------- 物品坐标（百分比，按参考图摆放） ----------------
+   台灯那一行 = 灯在背景图上的实际位置（热区），画面本身不用画东西 */
+.item--lamp     { left:11.0%; top:25.5%; width: 7.4%; height:27.0%; }
+.item--pillow   { left:25.2%; top:42.5%; width:16.2%; height:12.5%; }
+/* 褪黑素：整体缩到原来的约 85%，底边仍停在 48%（瓶子站的那条线没动），
+   盒子比例 4.3/12.9 = 0.333，正好等于内容比例换算后的值，图不留黑边 */
+.item--melatonin{ left:57.2%; top:35.1%; width: 4.3%; height:12.9%; }
+/* 眼罩：PNG 已裁掉上下大块透明留白（2048x2048 → 1848x786），
+   所以盒子比例按内容 2.351:1 换算 = 8.2 / 6.2，图形刚好铺满盒子，
+   热区与看到的眼罩严格 1:1。中心保持在 (67.1%, 46.25%)，位置没挪 */
+.item--eyemask  { left:63.0%; top:43.15%; width: 8.2%; height: 6.2%; }
+.item--book     { left:66.5%; top:85.5%; width:14.2%; height:13.0%; }
+
+/* 窗户没有独立 PNG，热区就是画面右侧窗户/窗帘那一块（30% x 42%） */
+.item--window{
+  left:66%; top:3%; width:30%; height:42%;
+  background:transparent;
+}
+
+/* ---------------- 通用：轻微点击反馈 .tap-feedback ----------------
+   所有物品（含台灯、窗户）点击瞬间都先播这一下 */
+@keyframes tapFeedback{
+  0%   { transform:translateY(0)    scale(1);   }
+  45%  { transform:translateY(-4px) scale(.96); }
+  100% { transform:translateY(0)    scale(1);   }
+}
+.item.tap-feedback{ animation:tapFeedback .2s var(--ease); }
+
+/* 枕头：原地左右摇晃两下（独立 class，绝不与放大混用） */
+@keyframes pillowShake{
+  0%   { transform:rotate(0deg)    translateX(0);     }
+  14%  { transform:rotate(-3deg)   translateX(-1.2%); }
+  32%  { transform:rotate(3deg)    translateX(1.2%);  }
+  50%  { transform:rotate(-2.4deg) translateX(-.9%);  }
+  68%  { transform:rotate(2.4deg)  translateX(.9%);   }
+  84%  { transform:rotate(-1deg)   translateX(-.4%);  }
+  100% { transform:rotate(0deg)    translateX(0);     }
+}
+.item.pillow-shake{ animation:pillowShake .72s var(--ease); }
+
+/* ---------------- 物品放大到屏幕中央 ----------------
+   dx / dy / zoom 由 JS 用 getBoundingClientRect 实时算出，写进 CSS 变量
+   不改 left/top，不重排 DOM */
+.item.is-zoomed{
+  z-index:20;
+  transition:transform var(--fx-dur) var(--ease);
+  transform:translate(var(--dx,0px), var(--dy,0px)) scale(var(--zoom,2));
+  filter:drop-shadow(0 26px 50px rgba(0,0,0,.45));
+  cursor:default;
+}
+/* 放大展示期间，其他物品变暗（并停止响应点击） */
+.layer--items.has-zoom .item:not(.is-zoomed){
+  opacity:.28;
+  filter:saturate(.6) brightness(.92);
+  pointer-events:none;
+}
+
+/* ---------------- 3. 动画层：书本弹出图 ---------------- */
+.fx-book{
+  position:absolute;
+  left:50%; top:50%;
+  width:64%;
+  transform:translate(-50%,-52%) scale(.55);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .46s var(--ease), transform .64s var(--ease), filter .6s var(--ease);
+  filter:drop-shadow(0 30px 64px rgba(0,0,0,.5));
+}
+.fx-book.is-on{
+  opacity:1;
+  transform:translate(-50%,-52%) scale(1);
+}
+/* 书本弹出期间，所有物品变暗（书本身也一起让位给大图） */
+.layer--items.has-book-open .item{
+  opacity:.22;
+  filter:saturate(.5) brightness(.9);
+  pointer-events:none;
+}
+
+/* ---------------- 4. 遮罩层（盖住整个舞台） ---------------- */
+.mask{
+  position:fixed; inset:0;         /* 全屏遮罩，铺满视口而非只盖舞台 */
+  z-index:40;
+  background:rgba(12,17,28,.58);
+  backdrop-filter:blur(3px);
+  -webkit-backdrop-filter:blur(3px);
+  opacity:0;
+  pointer-events:none;             /* 关闭时完全不拦截点击 */
+  transition:opacity .34s var(--ease);
+}
+.mask.is-open{ opacity:1; pointer-events:auto; }
+
+/* ---------------- 5. 弹层内容层（固定在视口，舞台不重排） ---------------- */
+.modal-host{
+  position:fixed; inset:0;
+  z-index:50;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  /* 关键：容器本身永不拦截点击。
+     关闭时不挡舞台；打开时点击空白会穿透到下面的遮罩，由遮罩负责关闭。
+     只有 .card 自己（pointer-events:auto）接收点击。 */
+  pointer-events:none;
+}
+
+/* ============================================================
+   卡片 = 一张羊皮纸
+   ------------------------------------------------------------
+   图片本身已抠掉白底（assets/paper-card），所以：
+   · 不用 border / border-radius / background-color，纸的边缘就是卡片边缘
+   · 阴影用 filter:drop-shadow（贴着纸的锯齿轮廓走，不是矩形投影）
+   · aspect-ratio 锁死原图比例，纸面在任何屏幕上都不被拉伸变形
+   · 内容超出时在纸内滚动，文字永远压在纸的空白区里
+   ============================================================ */
+.card{
+  position:relative;
+  display:none;
+  width:min(560px, 92vw, calc(84vh * var(--card-w) / var(--card-h)));
+  aspect-ratio: var(--card-w) / var(--card-h);
+  overflow-y:auto;
+  overflow-x:hidden;
+  /* 旧浏览器不认 image-set，先用 PNG 兜底；认识的浏览器自动挑体积小的 WebP */
+  background-image:url("assets/paper-card.png");
+  background-image:image-set(
+    url("assets/paper-card.webp") type("image/webp"),
+    url("assets/paper-card.png")  type("image/png")
+  );
+  background-size:100% 100%;
+  background-repeat:no-repeat;
+  background-color:transparent;
+  padding:0;                 /* 内边距交给 .card__inner —— 见下方说明 */
+  color:var(--paper-ink);
+  filter:drop-shadow(0 24px 46px rgba(8,12,22,.52));
+  pointer-events:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(120,92,48,.35) transparent;
+}
+.card.is-open{
+  display:flex;
+  flex-direction:column;
+  animation:cardIn .4s var(--ease) both;
+}
+@keyframes cardIn{
+  from{ opacity:0; transform:translateY(22px) scale(.96); }
+  to  { opacity:1; transform:translateY(0)    scale(1);   }
+}
+/* 内容不足时垂直居中；内容超出时 auto 外边距归零，顶部不会被截断 */
+.card__inner{
+  margin:auto;
+  width:100%;
+  /* 纸的"安全区"：文字不压撕边和左上角卷角。
+     百分比内边距写在这里而不是 .card，是因为百分比内边距按"包含块宽度"算 ——
+     写在 .card 上会按整个视口宽的 .modal-host 算，纸上留白会大得离谱；
+     写在 .card__inner（宽 = 纸宽）上才是真正按纸宽取值。 */
+  padding:8.6% 9.6% 9.2%;
+}
+/* 纸内的滚动条：细、暖褐、不抢戏 */
+.card::-webkit-scrollbar{ width:10px; }
+.card::-webkit-scrollbar-track{ background:transparent; }
+.card::-webkit-scrollbar-thumb{
+  background:rgba(120,92,48,.32);
+  border:3px solid transparent;
+  border-radius:99px;
+  background-clip:content-box;
+}
+
+/* 普通卡片 / 米黄卡片现在共用同一张纸，只保留类名给 JS 用 */
+.card--normal,
+.card--cream{
+  color:var(--paper-ink);
+}
+
+.card__icon{
+  width:56px; height:56px;
+  margin:0 auto 10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:28px;
+  border-radius:50%;
+  background:rgba(150,110,50,.13);
+  box-shadow:inset 0 0 0 1px rgba(120,88,38,.14);
+}
+
+.card__title{
+  font-size:21px; font-weight:700;
+  text-align:center;
+  letter-spacing:.5px;
+  margin-bottom:16px;
+  color:var(--paper-ink-strong);
+}
+
+.card__body{ font-size:15px; line-height:1.85; }
+.card__body p + p{ margin-top:12px; }
+
+/* 正文里的数据高亮 */
+.card__body .num{
+  font-weight:700;
+  color:var(--paper-accent);       /* 数据用深暖红，像红墨水写在纸上 */
+  font-size:17px;
+  padding:0 2px;
+}
+
+.card__body .tip{
+  display:block;
+  margin-top:14px;
+  padding:11px 14px;
+  border-radius:12px;
+  font-size:14px;
+  line-height:1.7;
+  background:rgba(255,252,240,.62);
+  box-shadow:inset 0 0 0 1px rgba(150,110,50,.22);
+  color:var(--paper-tip);
+}
+
+/* 关闭按钮：桌面 44x44；窄屏缩到 36x36（仍在纸的空白区内） */
+.card__close{
+  position:absolute;
+  z-index:2;                 /* 必须压住 .card__inner，否则 × 点不到 */
+  top:4.5%; right:6.2%;
+  width:44px; height:44px;
+  min-width:44px; min-height:44px;
+  display:flex; align-items:center; justify-content:center;
+  border:none; border-radius:50%;
+  background:rgba(255,255,255,.42);
+  box-shadow:inset 0 0 0 1px rgba(140,105,55,.2);
+  color:#6B4A22;
+  font-size:24px; line-height:1;
+  cursor:pointer;
+  transition:background .2s, color .2s, transform .2s;
+}
+.card__close:hover{ background:rgba(150,110,50,.22); color:#3F2C12; transform:rotate(90deg); }
+.card__close:focus-visible{ outline:3px solid #7FB2F0; outline-offset:2px; }
+
+/* ---------------- 开场提示（不挡点击） ---------------- */
+.stage-wrap{ position:absolute; inset:0; z-index:30; pointer-events:none; }
+
+/* 回跳白皮书：放在舞台内，随房间一起等比缩放，不会跑到画面外。
+   视觉上用羊皮纸底 + 暖墨字，和数据页底部的桥接入口是同一套语汇。 */
+.back-to-report{
+  position:absolute;
+  left:2.2%; top:3%;
+  z-index:32;
+  display:inline-flex; align-items:center; gap:8px;
+  padding:9px 18px;
+  border-radius:var(--slp-radius-pill,999px);
+  background:linear-gradient(135deg,var(--slp-paper,#EFE4CE),var(--slp-paper-shade,#DFD0B4));
+  color:var(--slp-paper-ink-strong,#533617);
+  font-size:13px; font-weight:600;
+  box-shadow:0 14px 30px -16px rgba(0,0,0,.7);
+  transition:transform .18s var(--ease), box-shadow .22s var(--ease);
+}
+.back-to-report:hover{ transform:translateY(-2px); box-shadow:0 20px 38px -16px rgba(0,0,0,.8); }
+.back-to-report:active{ transform:translateY(0) scale(.98); }
+.back-to-report svg{ width:14px; height:14px; }
+@media (max-width:760px){ .back-to-report{ font-size:11px; padding:7px 13px; } }
+.hint{
+  position:absolute;
+  left:50%; bottom:3.2%;
+  transform:translateX(-50%);
+  padding:9px 20px;
+  border-radius:999px;
+  background:rgba(20,26,40,.42);
+  color:rgba(255,255,255,.92);
+  font-size:14px;
+  letter-spacing:.6px;
+  white-space:nowrap;
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  animation:hintIn .8s var(--ease) .3s both, hintOut .8s var(--ease) 4.2s both;
+}
+@keyframes hintIn{ from{ opacity:0; transform:translate(-50%,10px); } to{ opacity:1; transform:translate(-50%,0); } }
+@keyframes hintOut{ to{ opacity:0; transform:translate(-50%,8px); } }
+
+/* ---------------- 提示条 ---------------- */
+.toast{
+  position:absolute;
+  left:50%; bottom:12%;
+  transform:translate(-50%, 14px);
+  z-index:60;
+  padding:12px 22px;
+  border-radius:999px;
+  background:rgba(24,31,46,.92);
+  color:#fff;
+  font-size:15px;
+  letter-spacing:.5px;
+  white-space:nowrap;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .3s var(--ease), transform .3s var(--ease);
+}
+.toast.is-on{ opacity:1; transform:translate(-50%, 0); }
+
+/* ---------------- 字幕条：夜晚点击台灯时出现 ----------------
+   层级 35 = 在物品层之上、遮罩(40)之下：打开卡片时字幕会被一起压暗，
+   不会跟卡片抢注意力。整条不拦点击（只有右上角的 × 可点），
+   所以字幕压住书本那块时，书还是点得到的。
+   ------------------------------------------------------------ */
+.caption{
+  position:absolute;
+  left:50%; bottom:3.4%;
+  z-index:35;
+  width:min(1040px, 88%);
+  transform:translate(-50%, 16px);
+  padding:16px 46px 16px 24px;
+  border-radius:16px;
+  background:linear-gradient(180deg, rgba(16,22,36,.78), rgba(9,13,23,.9));
+  box-shadow:
+    0 18px 46px rgba(0,0,0,.46),
+    inset 0 1px 0 rgba(255,255,255,.07),
+    inset 0 0 0 1px rgba(255,214,150,.16);
+  backdrop-filter:blur(9px);
+  -webkit-backdrop-filter:blur(9px);
+  color:#EDF1F9;
+  font-size:15.5px;
+  line-height:1.74;
+  text-align:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .45s var(--ease), transform .45s var(--ease);
+}
+.caption.is-on{ opacity:1; transform:translate(-50%, 0); }
+
+.caption__text p + p{ margin-top:8px; }
+/* 关键词（短波蓝光 / 褪黑素 / 2700–3000K / 舒缓情绪）用暖光色点亮 */
+.caption__text strong{
+  color:#FFD489;
+  font-weight:700;
+  text-shadow:0 0 12px rgba(255,196,110,.45);
+}
+/* 最后一句"暖光也别开太亮"当成强调行 */
+.caption__tip{
+  color:#FFE0A6;
+  font-weight:600;
+}
+.caption__close{
+  position:absolute;
+  top:8px; right:8px;
+  width:40px; height:40px;
+  display:flex; align-items:center; justify-content:center;
+  border:none; border-radius:50%;
+  background:rgba(255,255,255,.1);
+  color:rgba(255,255,255,.82);
+  font-size:20px; line-height:1;
+  cursor:pointer;
+  pointer-events:auto;
+  transition:background .2s, color .2s;
+}
+.caption__close:hover{ background:rgba(255,255,255,.22); color:#fff; }
+.caption__close:focus-visible{ outline:3px solid #7FB2F0; outline-offset:2px; }
+
+/* 字幕出现时让开场提示条退场，避免两条文字叠在底部 */
+.hint.is-off{ display:none; }
+
+/* ---------------- 移动端 / 小高度微调 ---------------- */
+@media (max-width:640px){
+  /* 窄屏（手机竖屏）：把纸按竖幅比例拉高，保证整段文字能落在纸里不用滚 */
+  .card{
+    aspect-ratio:1100 / 1440;
+    width:min(560px, 92vw, calc(88vh * 1100 / 1440));
+  }
+  .card__inner{ padding:7.4% 8.4% 7.8%; }
+  .card__title{ font-size:16.5px; margin-bottom:12px; }
+  .card__body{ font-size:12.5px; line-height:1.72; }
+  .card__body p + p{ margin-top:9px; }
+  .card__body .num{ font-size:14.5px; }
+  .card__body .tip{ font-size:11.5px; padding:8px 10px; margin-top:9px; }
+  .card__icon{ width:40px; height:40px; font-size:20px; margin-bottom:7px; }
+  .card__close{ top:3%; right:4.6%; width:36px; height:36px; min-width:36px; min-height:36px; font-size:20px; }
+  .hint{ font-size:12px; padding:8px 14px; bottom:2.4%; }
+  .caption{ width:95%; font-size:12.5px; line-height:1.68; padding:12px 40px 12px 12px; border-radius:12px; }
+  .caption__close{ top:6px; right:6px; width:30px; height:30px; font-size:17px; }
+}
+@media (max-height:520px){
+  .card__title{ font-size:16.5px; margin-bottom:11px; }
+  .card__body{ font-size:12.5px; line-height:1.75; }
+  .card__body .num{ font-size:14.5px; }
+  .card__icon{ width:42px; height:42px; font-size:21px; margin-bottom:7px; }
+  .fx-book{ width:56%; }
+  .caption{ bottom:2.6%; font-size:12.5px; line-height:1.6; }
+}
+
+/* 系统开启"减弱动态效果"：只保留必要的透明度过渡 */
+@media (prefers-reduced-motion:reduce){
+  .item, .card, .fx-book, .mask, .toast{ transition-duration:.15s !important; }
+  .item.tap-feedback, .item.pillow-shake{ animation-duration:.15s !important; }
+  .hint{ animation:none; opacity:1; }
+}

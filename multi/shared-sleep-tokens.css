@@ -1,0 +1,58 @@
+/* ============================================================
+   2026 中国睡眠健康研究白皮书 · 跨页面共享设计变量
+   ------------------------------------------------------------
+   数据页（睡眠白皮书-滚动版.html）与互动房间（小建议页面/）
+   共用这一份变量：夜色底、羊皮纸色阶、图表用色、圆角、字体栈。
+   保证「数据页 → 建议页」来回切换时视觉语言不断层。
+   ============================================================ */
+
+:root{
+  /* 夜色底：三层深浅，用于天幕、区块背景与最深处的留白 */
+  --slp-night:#0B0F26;
+  --slp-night-2:#0D1230;
+  --slp-night-deep:#070A1C;
+
+  /* 页面基础色 */
+  --slp-bg:#0B0F26;
+  --slp-bg-band:#0D1230;
+  --slp-surface:#141A36;
+  --slp-surface-2:#1A2145;
+  --slp-surface-3:#232B57;
+  --slp-fg:#EAEEF9;
+  --slp-fg-muted:#9DA6CB;
+
+  /* 描边 */
+  --slp-border:#242C58;
+  --slp-border-strong:#3A4480;
+
+  /* 品牌主色与语义色 */
+  --slp-primary:#4F7DF7;
+  --slp-secondary:#7C5CFC;
+  --slp-success:#34D399;
+  --slp-danger:#F0475C;
+  --slp-danger-soft:#FF7A5C;
+  --slp-fill-a:#3B63D8;
+  --slp-fill-b:#6A45E8;
+  --slp-focus:#8FB0FF;
+  --slp-nebula-pink:#E48BC0;   /* 玫瑰星云粉：点缀光点、分隔线、进度条收尾 */
+
+  /* 羊皮纸色阶：互动房间里的纸面卡片 */
+  --slp-paper:#EFE4CE;
+  --slp-paper-shade:#DFD0B4;
+  --slp-paper-ink:#4A3720;
+  --slp-paper-ink-strong:#533617;
+
+  /* 圆角 */
+  --slp-radius-card:20px;
+  --slp-radius-md:12px;
+  --slp-radius-sm:8px;
+  --slp-radius-pill:999px;
+
+  /* 字体栈 */
+  --slp-font-sans:'PingFang SC','HarmonyOS Sans SC','MiSans','Source Han Sans SC','Noto Sans SC','Hiragino Sans GB','Microsoft YaHei',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --slp-font-mono:'JetBrains Mono','SF Mono',Consolas,monospace;
+  --slp-font-num:-apple-system,'SF Pro Display','Helvetica Neue','DIN Alternate','Bahnschrift','Segoe UI',system-ui,sans-serif;
+
+  /* 动效曲线 */
+  --slp-ease:cubic-bezier(.22,.61,.36,1);
+}

@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026中国睡眠健康研究白皮书 · 滚动叙事版</title>
+    <meta name="description" content="2026 中国睡眠健康研究白皮书数据报告：夜间平均睡眠时长 6.97 小时，48.5% 受访者存在入睡焦虑。含人群画像、午睡节奏、健康风险、中国睡眠地图与自测。">
+    <meta name="theme-color" content="#0B0F26">
+    <meta name="color-scheme" content="dark">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="2026中国睡眠健康研究白皮书">
+    <meta property="og:description" content="夜间平均睡眠时长回升至 6.97 小时，但仍有近半数受访者被入睡焦虑困扰。">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B0F26'/%3E%3Cpath d='M21 8a9 9 0 1 0 3 12 7 7 0 0 1-3-12z' fill='%234F7DF7'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="shared-sleep-tokens.css">
+    <style>
+
+:root{
+  --slp-bg:var(--slp-night);
+  --slp-bg-band:var(--slp-night-2);
+  --slp-fill-a:#3B63D8;
+  --slp-fill-b:#6A45E8;
+  --slp-focus:#8FB0FF;
+}
+*,*::before,*::after{box-sizing:border-box}
+body,h1,h2,h3,p,dl,dd,figure,ul,ol{margin:0}
+ul,ol{list-style:none;padding:0}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+canvas,svg{display:block}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  background:var(--slp-bg);
+  color:var(--slp-fg);
+  font-family:var(--slp-font-sans);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  overflow-x:hidden;
+}
+:where(a,button,summary,[tabindex]):focus-visible{outline:2px solid var(--slp-focus);outline-offset:3px;border-radius:var(--slp-radius-sm)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.skip-link{position:fixed;top:12px;left:50%;transform:translate(-50%,-160%);z-index:80;padding:10px 18px;border-radius:var(--slp-radius-pill);background:var(--slp-surface-2);border:1px solid var(--slp-border-strong);font-size:14px;font-weight:600}
+.skip-link:focus{transform:translate(-50%,0)}
+.page-wrap{width:100%;max-width:1440px;margin:0 auto;position:relative}
+.section-inner{width:100%;max-width:1200px;margin:0 auto}
+section{position:relative;padding:clamp(64px,7.6vw,108px) 24px}
+
+/* ============================================================
+   全局滚动画布层：星空长图做底，深蓝幕布压暗，
+   保证后面所有数据章节都压在一个连续的夜空上
+   ============================================================ */
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:var(--slp-night-deep)}
+.ambient-layer{position:absolute;inset:-4% -2%;background-image:url("assets/starfield.jpg");background-size:cover;background-position:50% 30%;will-change:transform,opacity}
+.ambient-layer--far{opacity:.30;filter:saturate(1.05)}
+.ambient-layer--near{opacity:0;background-position:50% 60%;background-size:150%;will-change:transform,opacity}
+.ambient-veil{position:absolute;inset:0;background:
+  radial-gradient(120% 70% at 50% 0%,rgba(11,15,38,.35) 0%,rgba(11,15,38,.86) 46%,var(--slp-night) 78%),
+  linear-gradient(180deg,rgba(7,10,28,.55) 0%,rgba(11,15,38,.92) 60%,var(--slp-night) 100%)}
+.ambient-grain{position:absolute;inset:0;opacity:.16;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")}
+
+/* 阅读进度 + 章节导航 */
+.read-progress{position:fixed;inset:0 0 auto 0;height:2px;background:rgba(255,255,255,.05);z-index:70}
+.read-progress-bar{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--slp-primary),var(--slp-secondary),var(--slp-nebula-pink))}
+.section-rail{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:60;display:none;flex-direction:column;gap:2px;padding:8px;border-radius:var(--slp-radius-md);background:rgba(11,15,38,.42);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.section-rail a{display:block;padding:6px 10px;border-radius:var(--slp-radius-sm);font-size:13px;line-height:1.4;color:var(--slp-fg-muted);transition:color .18s ease,background-color .18s ease,transform .18s ease}
+.section-rail a:hover{color:var(--slp-fg);background:rgba(255,255,255,.05);transform:translateX(-3px)}
+.section-rail a[aria-current="true"]{color:var(--slp-fg);background:rgba(79,125,247,.16);font-weight:600}
+@media (min-width:1320px){.section-rail{display:flex}}
+/* 序章在播时把章节导航收起来：开场画面不该被一层浮动的目录压住 */
+.section-rail{transition:opacity .5s var(--slp-ease)}
+html.prologue-lock .section-rail{opacity:0;pointer-events:none}
+
+/* ============================================================
+   首屏：星空长图 + 曲速穿越 canvas
+   ============================================================ */
+
+/* ============================================================
+   序章：视频开场（静音自动播一次，文案按播放进度分三拍）
+   ------------------------------------------------------------
+   两个变量分别驱动两件事，互不干扰：
+   --pro-p    滚动进度 0~1，画面下沉放淡、文案上移退出；
+   --pro-play 播放进度 0~1，底部那条细线。
+   与首屏的衔接：底部渐变压到 --slp-night，画面淡出后露出背后的
+   全局星空层，再往下正好接上星空首屏，中间不留接缝。
+   ============================================================ */
+.prologue{position:relative;display:grid;place-items:center;min-height:100vh;min-height:100dvh;padding:clamp(84px,11vh,140px) 24px clamp(104px,13vh,150px);overflow:hidden;z-index:2;background:var(--slp-night)}
+.prologue-media{position:absolute;inset:0;z-index:0;overflow:hidden;transform:scale(calc(1 + var(--pro-p,0) * .07));transform-origin:50% 52%;opacity:calc(1 - var(--pro-p,0) * 1.08);will-change:transform,opacity}
+.prologue-poster,.prologue-video{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:cover;object-position:50% 52%;filter:saturate(1.04) contrast(1.02)}
+/* 海报与视频首帧由同一帧导出、同一套裁切参数，
+   所以视频接管画面时看不出切换痕迹 */
+.prologue-video{opacity:0;transition:opacity .5s var(--slp-ease)}
+.prologue.is-playing .prologue-video{opacity:1}
+.prologue-veil{position:absolute;inset:0;z-index:1;pointer-events:none;background:
+  radial-gradient(56% 24% at 50% 74%,rgba(11,15,38,.46) 0%,rgba(11,15,38,0) 100%),
+  radial-gradient(122% 82% at 50% 46%,rgba(11,15,38,0) 28%,rgba(11,15,38,.58) 100%),
+  linear-gradient(180deg,rgba(6,9,24,.72) 0%,rgba(9,13,34,.18) 30%,rgba(9,13,34,.48) 64%,var(--slp-night) 100%)}
+.prologue-inner{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;width:100%;max-width:1200px;text-align:center;opacity:calc(1 - var(--pro-p,0) * 1.42);transform:translateY(calc(var(--pro-p,0) * -36px))}
+/* 三拍文案叠在同一格子里交叉淡入，位置由 --stage-y 各自偏置，
+   免得切换时整块文字跳动，也免得结尾那拍挡住画面中间的人 */
+.prologue-stage{--stage-y:0px;grid-area:1/1;display:flex;flex-direction:column;align-items:center;gap:clamp(14px,2.2vh,24px);pointer-events:none;opacity:0;transform:translateY(calc(var(--stage-y) + 18px));transition:opacity .8s var(--slp-ease),transform .8s var(--slp-ease)}
+.prologue-stage.is-on{opacity:1;transform:translateY(var(--stage-y));pointer-events:auto}
+/* 脚本没跑起来时，第一拍直接亮着 —— 否则读者只会对着一个静帧，
+   连"这是什么"都不知道 */
+.prologue-stage[data-stage="1"]{opacity:1;transform:translateY(var(--stage-y))}
+html.js-motion .prologue-stage[data-stage="1"]{opacity:0;transform:translateY(calc(var(--stage-y) + 18px))}
+html.js-motion .prologue-stage[data-stage="1"].is-on{opacity:1;transform:translateY(var(--stage-y))}
+.prologue-stage[data-stage="3"]{--stage-y:clamp(140px,25vh,250px)}
+/* 列宽写死成 1fr、文字块再撑满：默认的 auto 列会按文字"理想行宽"收缩，
+   一句话会被拆成三行 */
+.prologue-stage[data-stage="3"],
+.prologue-hook{width:100%}
+/* 限宽用 em 而不是 ch：中文一个字宽约 1em，而 ch 只有"0"那么宽，
+   用 ch 会把一句完整的话拆成三行 */
+.prologue-hook{max-width:22em;font-size:clamp(20px,2.5vw,34px);font-weight:600;line-height:1.62;letter-spacing:.03em;color:#fff;text-wrap:balance;text-shadow:0 14px 46px rgba(4,8,26,.92),0 2px 8px rgba(4,8,26,.75)}
+.prologue-hook strong{color:var(--slp-nebula-pink);font-weight:700;font-variant-numeric:tabular-nums}
+.prologue-kpi{display:flex;align-items:baseline;gap:10px;font-family:var(--slp-font-num);font-size:clamp(56px,7.2vw,102px);font-weight:700;line-height:.94;letter-spacing:-.02em;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 0 54px rgba(79,125,247,.5),0 14px 46px rgba(4,8,26,.9)}
+.prologue-kpi-unit{font-size:.34em;font-weight:600;color:var(--slp-primary)}
+.prologue-kpi-label{font-size:clamp(13px,1.06vw,16px);letter-spacing:.02em;color:rgba(199,206,230,.94);text-shadow:0 8px 26px rgba(4,8,26,.8)}
+.prologue-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:16px;margin-top:2px}
+/* 默认藏着；只有「自动播放被拦」或「系统开了减少动态效果」时才给出来 */
+.prologue-play{display:none;align-items:center;gap:8px;padding:12px 22px;border-radius:var(--slp-radius-pill);border:1px solid rgba(255,255,255,.22);background:rgba(11,15,38,.42);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);color:rgba(234,238,249,.9);font-size:14px;font-weight:600}
+.prologue-play:hover{background:rgba(11,15,38,.62);border-color:rgba(255,255,255,.34)}
+.prologue.is-static .prologue-play{display:inline-flex}
+/* 底部进度线放在正中偏下，避开视频右下角的生成标识，不遮挡它 */
+.prologue-progress{position:absolute;left:50%;bottom:32px;z-index:3;transform:translateX(-50%);display:flex;align-items:center;gap:12px;font-size:11px;letter-spacing:.24em;color:rgba(234,238,249,.55)}
+.prologue-progress-bar{position:relative;display:block;width:132px;height:1px;background:rgba(255,255,255,.2);overflow:hidden}
+.prologue-progress-bar i{position:absolute;inset:0;display:block;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,var(--slp-primary),var(--slp-nebula-pink))}
+
+.hero{position:relative;display:grid;align-items:center;min-height:100vh;min-height:100dvh;padding:clamp(88px,11vh,140px) 24px clamp(72px,9vh,104px);overflow:hidden;z-index:2}
+.hero-media{position:absolute;inset:-6%;z-index:0;overflow:hidden;
+  /* 星空两侧用同色底兜住：竖构图的银河只占画面中间一条，
+     放大到铺满会糊成一片，所以宁可保留构图、用底色补边。 */
+  background:radial-gradient(120% 90% at 50% 32%,#1B2350 0%,#101635 46%,#0B0F26 100%)}
+.hero-photo{width:100%;height:100%;object-fit:cover;object-position:50% 38%;opacity:.9;filter:saturate(1.16) contrast(1.02);transform:scale(1.82);will-change:transform}
+.hero-media::after{content:"";position:absolute;inset:0;background:
+  radial-gradient(90% 60% at 62% 40%,rgba(228,139,192,.16) 0%,rgba(11,15,38,0) 60%),
+  linear-gradient(180deg,rgba(7,10,28,.35) 0%,rgba(9,13,34,.72) 62%,rgba(11,15,38,.98) 100%)}
+#warp-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.hero-vignette{position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(120% 80% at 50% 55%,rgba(11,15,38,0) 42%,rgba(11,15,38,.7) 100%)}
+.hero-inner{position:relative;z-index:3;display:grid;grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);gap:clamp(32px,5vw,76px);align-items:center;width:100%;max-width:1200px;margin:0 auto}
+.hero-lead{display:flex;flex-direction:column;align-items:flex-start;gap:22px}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;padding:7px 16px;border-radius:var(--slp-radius-pill);border:1px solid rgba(255,255,255,.16);background:rgba(11,15,38,.4);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);font-size:12.5px;letter-spacing:.16em;color:rgba(234,238,249,.86)}
+.hero-eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--slp-nebula-pink);box-shadow:0 0 12px var(--slp-nebula-pink);animation:eyebrowPulse 2.6s ease-in-out infinite}
+@keyframes eyebrowPulse{0%,100%{opacity:.55;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
+.hero-title{font-size:clamp(28px,3.6vw,52px);font-weight:700;line-height:1.24;letter-spacing:.05em;text-wrap:balance;text-shadow:0 12px 40px rgba(4,8,26,.7)}
+/* 逐字入场等首屏真正进入视口才播放（#hero.is-armed 由脚本加上）：
+   否则用户在序章看视频的这 8 秒里，标题动画已经自己播完了 */
+.hero-title .char{display:inline-block;opacity:0;transform:translateY(24px);animation:charEnter .62s cubic-bezier(.22,1,.36,1) forwards;animation-delay:calc(var(--delay,0) * 62ms);animation-play-state:paused}
+#hero.is-armed .hero-title .char{animation-play-state:running}
+@keyframes charEnter{to{opacity:1;transform:translateY(0)}}
+.hero-deck{max-width:52ch;font-size:clamp(15px,1.1vw,17px);line-height:1.85;color:#C7CEE6;text-wrap:pretty;text-shadow:0 8px 26px rgba(4,8,26,.75)}
+.hero-deck strong{color:#fff;font-weight:600}
+.hero-actions{display:flex;flex-wrap:wrap;align-items:center;gap:18px}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;border-radius:var(--slp-radius-pill);background:linear-gradient(135deg,var(--slp-fill-a),var(--slp-fill-b));color:#fff;font-size:15px;font-weight:600;box-shadow:0 16px 34px -16px rgba(79,125,247,.9);transition:box-shadow .25s ease,transform .16s ease}
+.btn-primary:hover{box-shadow:0 20px 44px -16px rgba(79,125,247,1)}
+.btn-primary:active{transform:scale(.97)}
+.btn-primary svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.hero-source{font-size:12.5px;color:rgba(157,166,203,.92)}
+.hero-kpi{display:flex;flex-direction:column;gap:24px;padding:clamp(20px,2.4vw,30px) clamp(20px,2.2vw,28px);border:1px solid rgba(255,255,255,.12);border-radius:var(--slp-radius-card);background:rgba(11,15,38,.46);backdrop-filter:blur(14px) saturate(1.1);-webkit-backdrop-filter:blur(14px) saturate(1.1);box-shadow:0 30px 70px -40px rgba(2,5,18,.95)}
+.hero-kpi-number{display:flex;align-items:baseline;gap:8px;font-family:var(--slp-font-num);font-size:clamp(54px,7.4vw,102px);font-weight:700;line-height:.94;letter-spacing:-.02em;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 0 46px rgba(79,125,247,.55)}
+.hero-kpi-unit{font-size:.4em;font-weight:600;color:var(--slp-primary)}
+.hero-kpi-label{margin-top:10px;font-size:15px;color:var(--slp-fg)}
+.hero-kpi-list{display:grid;gap:2px}
+.hero-kpi-list>div{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:13px 0;border-top:1px solid rgba(255,255,255,.1)}
+.hero-kpi-list dt{font-size:13px;color:var(--slp-fg-muted)}
+.hero-kpi-list dd{font-family:var(--slp-font-num);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.scroll-cue{position:absolute;left:50%;bottom:26px;z-index:4;display:flex;flex-direction:column;align-items:center;gap:8px;transform:translateX(-50%);font-size:11.5px;letter-spacing:.24em;color:rgba(234,238,249,.6)}
+.scroll-cue-line{width:1px;height:44px;background:linear-gradient(180deg,rgba(234,238,249,.7),rgba(234,238,249,0));overflow:hidden;position:relative}
+.scroll-cue-line::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(228,139,192,0),var(--slp-nebula-pink));animation:cueDrop 2.1s cubic-bezier(.6,0,.2,1) infinite}
+@keyframes cueDrop{0%{transform:translateY(-100%)}60%,100%{transform:translateY(100%)}}
+@media (max-width:900px){
+  .hero-inner{grid-template-columns:1fr;gap:34px}
+  .hero-kpi{padding:22px}
+}
+
+/* ============================================================
+   整屏章节封面：粘性吸附 + 滚轮推进
+   轨道高度决定停留时长，封面内部内容随进度错峰入场
+   ============================================================ */
+.cover{position:relative;padding:0;z-index:2}
+.cover-track{position:relative;height:160vh}
+.cover-sticky{position:sticky;top:0;height:100vh;height:100dvh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.cover-photo{position:absolute;inset:-6% -4%;background-image:url("assets/starfield.jpg");background-size:cover;background-position:calc(50% + var(--cover-x,0px)) 50%;opacity:calc(.24 + var(--cover-p,0)*.42);transform:scale(calc(1.08 + var(--cover-p,0)*.16));will-change:transform,opacity}
+/* 远景层：只做反向位移，和主图拉开速度差，封面才有纵深 */
+/* 远景层不做模糊：blur 在整屏尺寸上是实打实的每帧成本，
+   拉开背景尺寸 + 降不透明度已经能得到同样的"远"的观感 */
+.cover-photo-echo{position:absolute;inset:-10% -6%;background-image:url("assets/starfield.jpg");background-size:190%;background-position:calc(50% - var(--cover-x,0px) * 1.4) 40%;opacity:calc(.09 + var(--cover-p,0)*.15);transform:scale(1.14)}
+.cover-scrim{position:absolute;inset:0;background:
+  radial-gradient(70% 60% at 50% 44%,rgba(124,92,252,.16) 0%,rgba(11,15,38,0) 62%),
+  linear-gradient(180deg,rgba(11,15,38,.86) 0%,rgba(9,13,34,.7) 44%,rgba(11,15,38,.95) 100%)}
+.cover-inner{position:relative;z-index:2;width:100%;max-width:1200px;padding:0 24px;text-align:center}
+.cover-eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:12.5px;letter-spacing:.34em;color:var(--slp-nebula-pink);text-transform:uppercase}
+.cover-eyebrow::before,.cover-eyebrow::after{content:"";width:34px;height:1px;background:linear-gradient(90deg,rgba(228,139,192,0),var(--slp-nebula-pink))}
+.cover-eyebrow::after{background:linear-gradient(90deg,var(--slp-nebula-pink),rgba(228,139,192,0))}
+/* 字号同时受视口高度约束：短屏（笔记本、横屏手机）上大号数字才不会顶出画面 */
+.cover-num{margin-top:4px;font-family:var(--slp-font-num);font-size:clamp(80px,min(19vw,28vh),236px);font-weight:700;line-height:.8;letter-spacing:-.04em;color:transparent;-webkit-text-stroke:1.6px rgba(234,238,249,.42);background:linear-gradient(180deg,rgba(234,238,249,.3),rgba(234,238,249,0));-webkit-background-clip:text;background-clip:text;user-select:none}
+.cover-title{position:relative;margin-top:-.14em;font-size:clamp(32px,min(6vw,6.4vh),80px);font-weight:700;line-height:1.08;letter-spacing:.02em;text-wrap:balance;text-shadow:0 18px 60px rgba(4,8,26,.9),0 0 2px rgba(4,8,26,.95)}
+.cover-sub{margin:clamp(14px,2.4vh,22px) auto 0;max-width:56ch;font-size:clamp(14px,1.15vw,17px);line-height:1.9;color:var(--slp-fg-muted);text-wrap:pretty}
+.cover-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:clamp(18px,3vh,30px)}
+.cover-chip{padding:8px 16px;border-radius:var(--slp-radius-pill);border:1px solid rgba(255,255,255,.14);background:rgba(11,15,38,.42);font-size:12.5px;color:rgba(234,238,249,.86);font-variant-numeric:tabular-nums}
+.cover-progress{position:absolute;left:50%;bottom:34px;z-index:3;transform:translateX(-50%);display:flex;align-items:center;gap:12px;font-size:11px;letter-spacing:.2em;color:rgba(234,238,249,.5);font-variant-numeric:tabular-nums}
+.cover-progress-bar{position:relative;width:110px;height:1px;background:rgba(255,255,255,.2);overflow:hidden}
+.cover-progress-bar span{position:absolute;inset:0;transform-origin:0 50%;background:var(--slp-nebula-pink);transform:scaleX(var(--cover-p,0))}
+.cover[data-cover-variant="ink"] .cover-photo{filter:hue-rotate(-16deg) saturate(1.15)}
+.cover[data-cover-variant="ink"] .cover-scrim{background:
+  radial-gradient(70% 60% at 50% 46%,rgba(240,71,92,.16) 0%,rgba(11,15,38,0) 62%),
+  linear-gradient(180deg,rgba(11,15,38,.88) 0%,rgba(38,14,26,.66) 44%,rgba(11,15,38,.96) 100%)}
+.cover[data-cover-variant="dawn"] .cover-photo{filter:hue-rotate(22deg) saturate(1.05)}
+.cover[data-cover-variant="dawn"] .cover-scrim{background:
+  radial-gradient(70% 60% at 50% 46%,rgba(52,211,153,.12) 0%,rgba(11,15,38,0) 62%),
+  linear-gradient(180deg,rgba(11,15,38,.88) 0%,rgba(12,32,34,.6) 44%,rgba(11,15,38,.96) 100%)}
+
+/* 封面内部入场：由 --cover-in 统一驱动，滚动到哪就入场到哪 */
+.cover-inner>*{opacity:var(--cover-in,0);transform:translateY(calc((1 - var(--cover-in,0)) * 26px))}
+/* 入场曲线整体前移：封面刚露头就该有内容，
+   否则轨道起始那一段整屏是空的，读起来像"卡住了"。 */
+.cover-inner>*:nth-child(1){--cover-in:clamp(.05,calc((var(--cover-p,0) - .015) * 8),1)}
+.cover-inner>*:nth-child(2){--cover-in:clamp(.04,calc((var(--cover-p,0) - .07) * 4.8),1)}
+.cover-inner>*:nth-child(3){--cover-in:clamp(.03,calc((var(--cover-p,0) - .14) * 3.8),1)}
+.cover-inner>*:nth-child(4){--cover-in:clamp(.03,calc((var(--cover-p,0) - .22) * 3.2),1)}
+.cover-inner>*:nth-child(5){--cover-in:clamp(.03,calc((var(--cover-p,0) - .3) * 2.8),1)}
+.cover-inner{transition:none}
+.cover-sticky::after{content:"";position:absolute;inset:auto 0 0;height:180px;z-index:2;background:linear-gradient(180deg,rgba(11,15,38,0),var(--slp-bg));pointer-events:none}
+
+/* ============================================================
+   数据区块通用样式（沿用原报告视觉语言）
+   ============================================================ */
+#dashboard,#personas,#nap,#risk,#map,#trend{z-index:2}
+.section-header{max-width:780px;margin:0 auto clamp(30px,4vw,52px);text-align:center}
+.js-motion .section-header{opacity:0;transform:translateY(26px)}
+.js-motion .section-header.is-visible{opacity:1;transform:translateY(0)}
+.section-header{transition:opacity .6s var(--slp-ease),transform .6s var(--slp-ease)}
+.section-title{font-size:clamp(24px,3.3vw,38px);font-weight:700;line-height:1.28;letter-spacing:.01em;text-wrap:balance}
+.section-desc{margin-top:14px;font-size:15px;line-height:1.8;color:var(--slp-fg-muted);text-wrap:pretty}
+.section-index{display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;font-size:12px;letter-spacing:.28em;color:var(--slp-primary)}
+.section-index::before{content:"";width:22px;height:1px;background:currentColor;opacity:.7}
+
+/* 卡片 */
+/* 不再用 backdrop-filter：长页面上二十多张卡片都开模糊会让滚动明显发沉，
+   改用不透明度更高的纯渐变，观感几乎一致但没有合成开销 */
+.card{background:linear-gradient(180deg,rgba(20,26,54,.985),rgba(15,20,44,.985));border:1px solid var(--slp-border);border-radius:var(--slp-radius-card);box-shadow:0 24px 60px -34px rgba(4,8,26,.95)}
+.card-pad{padding:clamp(20px,1.8vw,26px)}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
+.card-title{font-size:16px;font-weight:600;line-height:1.4;letter-spacing:.01em}
+.card-sub{margin-top:5px;font-size:13px;line-height:1.6;color:var(--slp-fg-muted)}
+.delta{flex:none;display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:var(--slp-radius-pill);font-size:12px;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
+.delta-up{color:var(--slp-success);background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3)}
+.delta-down{color:var(--slp-danger-soft);background:rgba(255,122,92,.12);border:1px solid rgba(255,122,92,.3)}
+.delta-neutral{color:var(--slp-fg-muted);background:var(--slp-surface-2);border:1px solid var(--slp-border)}
+.chart{position:relative;width:100%}
+.chart-fallback{display:flex;align-items:center;justify-content:center;height:100%;min-height:120px;padding:20px;border:1px dashed var(--slp-border-strong);border-radius:var(--slp-radius-md);font-size:13px;line-height:1.7;color:var(--slp-fg-muted);text-align:center}
+
+/* 卡片入场的可见度由滚动进度驱动（JS 写 --p） */
+.js-motion .rise{opacity:clamp(.28,calc(var(--p,1) * 1.55),1);transform:translateY(calc((1 - var(--p,1)) * 32px)) scale(calc(.985 + var(--p,1)*.015))}
+.rise{transition:none}
+/* will-change 只在真正推进时才挂上：常驻会让浏览器为每个卡片单独开合成层，
+   二十多张卡片的显存与层管理成本反而拖慢滚动 */
+.rise.is-moving{will-change:transform,opacity}
+
+/* 核心指标 */
+.dashboard-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.dash-card{display:flex;flex-direction:column;min-height:352px;transition:border-color .2s ease}
+.dash-card:hover{border-color:var(--slp-border-strong)}
+.dash-card--wide{grid-column:span 2}
+.dash-card--wide .dash-chart{min-height:300px}
+.dash-chart{flex:1;min-height:240px}
+#clock-gauge-chart{display:flex;align-items:center;justify-content:center}
+.card--interactive{cursor:pointer;transition:border-color .2s ease,transform .22s cubic-bezier(.22,1,.36,1),box-shadow .25s ease}
+.card--interactive:hover{border-color:var(--slp-border-strong)}
+.card--interactive:active{transform:translateY(-1px) scale(.996)}
+@media (max-width:1080px){.dashboard-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-card--wide{grid-column:span 2}}
+@media (max-width:720px){.dashboard-grid{grid-template-columns:1fr}.dash-card--wide{grid-column:span 1}.dash-card{min-height:320px}}
+.people-body{display:flex;flex:1;align-items:center;gap:clamp(20px,4vw,48px)}
+.people-meta{flex:0 0 auto}
+.people-value{font-family:var(--slp-font-num);font-size:clamp(40px,4.4vw,58px);font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums}
+.people-label{margin-top:8px;max-width:12em;font-size:13px;line-height:1.6;color:var(--slp-fg-muted)}
+.people-grid{flex:1 1 auto;max-width:340px;display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+.people-cell{aspect-ratio:1;border-radius:4px;background:var(--slp-surface-2);border:1px solid rgba(58,68,128,.55);transition:background-color .35s ease,box-shadow .35s ease,opacity .35s ease,border-color .35s ease}
+.people-cell.active{background:linear-gradient(135deg,var(--slp-primary),var(--slp-secondary));box-shadow:0 0 10px -2px rgba(79,125,247,.7)}
+.people-cell.pending{border-color:rgba(58,68,128,.32);opacity:.5}
+@media (max-width:720px){.people-body{flex-direction:column;align-items:flex-start}}
+
+/* 人群画像 */
+.persona-tabs{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:28px}
+.persona-tab{padding:11px 24px;border-radius:var(--slp-radius-pill);border:1px solid var(--slp-border);background:var(--slp-surface);color:var(--slp-fg-muted);font-size:14px;font-weight:500;transition:color .18s ease,border-color .18s ease,background-color .18s ease,transform .18s ease}
+.persona-tab:hover{color:var(--slp-fg);border-color:var(--slp-border-strong);transform:translateY(-2px)}
+.persona-tab.active{background:linear-gradient(135deg,var(--slp-fill-a),var(--slp-fill-b));border-color:transparent;color:#fff;box-shadow:0 12px 28px -14px rgba(79,125,247,.9)}
+.persona-panel{display:none}
+.persona-panel.active{display:block;animation:fadeIn .42s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.persona-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+@media (max-width:960px){.persona-grid{grid-template-columns:1fr}}
+.persona-chart-card{min-height:352px}
+.persona-chart-title{font-size:15px;font-weight:600;margin-bottom:5px}
+.persona-chart-sub{margin-bottom:14px;font-size:13px;line-height:1.6;color:var(--slp-fg-muted)}
+
+/* 午睡 */
+.nap-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:20px}
+@media (max-width:960px){.nap-grid{grid-template-columns:1fr}}
+.nap-card{min-height:420px}
+
+/* 健康风险 */
+#risk{background:linear-gradient(180deg,rgba(11,15,38,.2),rgba(72,22,38,.42) 50%,rgba(11,15,38,.2))}
+.risk-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+@media (max-width:960px){.risk-grid{grid-template-columns:1fr}}
+.risk-card{min-height:320px}
+.impact-band{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:20px;border:1px solid rgba(240,71,92,.28);border-radius:var(--slp-radius-card);background:linear-gradient(180deg,rgba(240,71,92,.13),rgba(11,15,38,.55));overflow:hidden}
+.impact-card{padding:clamp(26px,3vw,40px) 24px;text-align:center}
+.impact-card+.impact-card{border-left:1px solid rgba(240,71,92,.22)}
+@media (max-width:820px){.impact-band{grid-template-columns:1fr}.impact-card+.impact-card{border-left:0;border-top:1px solid rgba(240,71,92,.22)}}
+.impact-value{font-family:var(--slp-font-num);font-size:clamp(28px,3vw,38px);font-weight:700;font-variant-numeric:tabular-nums;color:#FFD9D2}
+.impact-label{margin-top:8px;font-size:14px;color:var(--slp-fg-muted)}
+.impact-card .elastic{transition:opacity .7s cubic-bezier(.34,1.4,.64,1),transform .7s cubic-bezier(.34,1.4,.64,1)}
+.js-motion .impact-card .elastic{opacity:0;transform:scale(.6)}
+.js-motion .impact-card.is-visible .elastic{opacity:1;transform:scale(1)}
+
+/* 睡眠地图 */
+.map-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);gap:20px}
+@media (max-width:1080px){.map-grid{grid-template-columns:1fr}}
+.map-card{position:relative;min-height:560px;display:flex;flex-direction:column}
+.map-card>.chart{flex:1}
+.map-legend{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--slp-fg-muted);font-variant-numeric:tabular-nums}
+.map-legend-bar{flex:1;max-width:220px;height:8px;border-radius:var(--slp-radius-pill);background:linear-gradient(90deg,var(--slp-danger),var(--slp-primary),var(--slp-success))}
+.map-loading{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;border-radius:var(--slp-radius-card);background:rgba(11,15,38,.72);opacity:0;pointer-events:none;transition:opacity .3s ease}
+.map-loading.is-active{opacity:1;pointer-events:auto}
+.map-loading-text{font-size:13px;color:var(--slp-fg-muted)}
+.map-dots{display:flex;gap:10px}
+.breath-dot{width:10px;height:10px;border-radius:50%;background:var(--slp-primary);animation:breathPulse 1.4s ease-in-out infinite}
+.breath-dot:nth-child(2){animation-delay:.2s;background:var(--slp-secondary)}
+.breath-dot:nth-child(3){animation-delay:.4s;background:var(--slp-success)}
+@keyframes breathPulse{0%,100%{transform:scale(.6);opacity:.4}50%{transform:scale(1.15);opacity:1}}
+.map-fallback{margin-top:14px;padding:14px 16px;border:1px dashed var(--slp-border-strong);border-radius:var(--slp-radius-md);font-size:13px;line-height:1.8;color:var(--slp-fg-muted)}
+.map-fallback strong{color:var(--slp-fg);font-weight:600}
+
+/* 趋势与自测 */
+.trend-chart-card{min-height:360px;margin-bottom:20px}
+.quiz-card{padding:clamp(22px,2.2vw,34px)}
+.quiz-question{font-size:15px;font-weight:600;margin-bottom:14px}
+.quiz-options{display:flex;flex-wrap:wrap;gap:10px}
+.quiz-option{padding:10px 18px;border:1px solid var(--slp-border);border-radius:var(--slp-radius-pill);background:var(--slp-surface-2);color:var(--slp-fg);font-size:14px;transition:color .18s ease,border-color .18s ease,background-color .18s ease,transform .18s ease}
+.quiz-option:hover{border-color:var(--slp-border-strong);transform:translateY(-1px)}
+.quiz-option.selected{background:linear-gradient(135deg,var(--slp-fill-a),var(--slp-fill-b));border-color:transparent;color:#fff;font-weight:600}
+.quiz-step{margin-bottom:22px}
+.quiz-result{margin-top:22px;padding:18px;border:1px solid var(--slp-border-strong);border-radius:var(--slp-radius-md);background:var(--slp-surface-2);font-size:14px;line-height:1.8}
+.quiz-result strong{color:var(--slp-fg)}
+.quiz-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:var(--slp-radius-pill);border:1px solid var(--slp-border);background:var(--slp-surface);color:var(--slp-fg);font-size:14px;transition:border-color .18s ease,background-color .18s ease,transform .18s ease}
+.btn-ghost:hover{border-color:var(--slp-border-strong);background:var(--slp-surface-2);transform:translateY(-1px)}
+.share-bar{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;margin-top:32px}
+
+/* 通往「睡眠建议」房间的桥接入口：两页风格切换的过渡带 */
+.bridge{margin-top:22px;border:1px solid var(--slp-border-strong);border-radius:var(--slp-radius-card);background:
+  linear-gradient(135deg,rgba(20,26,54,.96) 0%,rgba(58,38,26,.6) 100%);
+  padding:clamp(24px,3vw,40px);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;overflow:hidden;position:relative}
+.bridge::after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(239,228,206,.16),rgba(239,228,206,0) 68%)}
+.bridge-title{font-size:clamp(20px,2.2vw,26px);font-weight:700}
+.bridge-desc{margin-top:10px;max-width:52ch;font-size:14px;line-height:1.85;color:var(--slp-fg-muted)}
+.bridge-desc em{font-style:normal;color:var(--slp-paper)}
+.bridge-cta{position:relative;z-index:1;display:inline-flex;align-items:center;gap:10px;padding:14px 26px;border-radius:var(--slp-radius-pill);background:linear-gradient(135deg,var(--slp-paper),var(--slp-paper-shade));color:var(--slp-paper-ink-strong);font-size:15px;font-weight:600;box-shadow:0 18px 40px -20px rgba(239,228,206,.8);transition:transform .18s ease,box-shadow .22s ease}
+.bridge-cta:hover{transform:translateY(-2px);box-shadow:0 24px 48px -20px rgba(239,228,206,.9)}
+.bridge-cta:active{transform:translateY(0) scale(.98)}
+@media (max-width:760px){.bridge{grid-template-columns:1fr;text-align:left}}
+
+/* 页脚 */
+.footer{position:relative;z-index:2;border-top:1px solid var(--slp-border);padding:44px 24px 56px;text-align:center;font-size:13px;line-height:1.9;color:var(--slp-fg-muted);background:linear-gradient(180deg,rgba(11,15,38,0),rgba(7,10,28,.6))}
+.footer a{color:var(--slp-primary);font-weight:600}
+.footer a:hover{text-decoration:underline}
+.footer-note{margin-top:6px;opacity:.8}
+
+/* 表盘呼吸光晕 */
+.arc-pulse{animation:arcPulse 3.6s ease-in-out infinite}
+@keyframes arcPulse{0%,100%{opacity:.75}50%{opacity:1}}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .hero-title .char{animation:none;opacity:1;transform:none}
+  .persona-panel.active{animation:none}
+  .breath-dot{animation:none;opacity:.85}
+  .arc-pulse{animation:none}
+  .scroll-cue-line::after,.hero-eyebrow i{animation:none}
+  .js-motion .impact-card .elastic{opacity:1;transform:none}
+  .js-motion .rise{opacity:1;transform:none}
+  .js-motion .section-header{opacity:1;transform:none}
+  .cover-inner>*{opacity:1;transform:none}
+  /* 序章：不动画面、不做过渡，直接把三拍文案全部交出来，
+     想看画面的人可以点「播放开场画面」自己放 */
+  .prologue-media{transform:none;opacity:1}
+  .prologue-inner{opacity:1;transform:none}
+  .prologue-stage{transition:none}
+  .prologue-play{display:inline-flex}
+  .card--interactive:hover{transform:none}
+}
+@media (prefers-reduced-transparency:reduce){
+  .map-loading{background:#0B0F26}
+  .hero-kpi{background:rgba(11,15,38,.92)}
+}
+
+/* 窄屏：整屏封面与导航让位给内容 */
+@media (max-width:720px){
+  .cover-track{height:130vh}
+  .cover-num{font-size:clamp(72px,min(26vw,26vh),160px)}
+  /* 序章：窄屏上正文更大，文案收窄、结尾那拍少往下压 */
+  .prologue-hook{max-width:17em}
+  .prologue-stage[data-stage="3"]{--stage-y:clamp(150px,24vh,230px)}
+  .prologue-kpi{font-size:clamp(46px,13vw,72px)}
+  .prologue-kpi-label{max-width:20em}
+}
+    </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <div class="read-progress" aria-hidden="true"><span class="read-progress-bar" id="read-progress-bar"></span></div>
+
+  <!-- 全局夜空层：所有数据章节共用一张连续星空，滚动时缓慢位移 -->
+  <div class="ambient" aria-hidden="true">
+    <div class="ambient-layer ambient-layer--far" data-ambient="0.05"></div>
+    <div class="ambient-layer ambient-layer--near" data-ambient="0.22"></div>
+    <div class="ambient-veil"></div>
+    <div class="ambient-grain"></div>
+  </div>
+
+  <nav class="section-rail" aria-label="章节导航">
+    <a href="#dashboard">核心指标</a>
+    <a href="#personas">人群画像</a>
+    <a href="#nap">午睡节奏</a>
+    <a href="#risk">健康风险</a>
+    <a href="#map">睡眠地图</a>
+    <a href="#trend">趋势自测</a>
+  </nav>
+
+  <main id="main" class="page-wrap">
+    <!-- 序章：视频开场。静音播一次，文案跟着播放进度分三拍；
+         播完停在「人已入睡」那一帧，不做循环 —— 首帧是街道、
+         末帧是卧室，循环回去会是一次很明显的跳变 -->
+    <section id="prologue" class="prologue" aria-label="开场：午夜的城，和睡不着的人">
+      <!-- 单文件版会把开场视频的 base64 塞进这个数据块，脚本再把它转成
+           Blob URL 交给 <video>：iOS Safari 与部分微信内核不播 data: 视频，
+           而且超长的 data URL 在某些手机浏览器上会直接失效。
+           滚动版这里是空的，视频走旁边的 assets/prologue.mp4。 -->
+      <script type="text/plain" id="prologue-video-data"></script>
+      <div class="prologue-media" aria-hidden="true">
+        <img class="prologue-poster" src="assets/prologue-poster.jpg" alt="" draggable="false" decoding="async">
+        <!-- autoplay 兜的是"脚本没跑起来"的情况：那时至少画面还在动，
+             不至于让人对着一张静帧发呆（有脚本时由脚本接管播放与文案） -->
+        <video class="prologue-video" id="prologue-video" muted playsinline autoplay preload="auto" disablepictureinpicture poster="assets/prologue-poster.jpg">
+          <source src="assets/prologue.mp4" type="video/mp4">
+        </video>
+      </div>
+      <div class="prologue-veil" aria-hidden="true"></div>
+      <div class="prologue-inner">
+        <!-- 文案要包在 <span> 里：.prologue-stage 是 flex 容器，
+             句子里一有 <strong> 就会被当成独立的一项，竖着排成三行 -->
+        <p class="prologue-stage" data-stage="1"><span class="prologue-hook">午夜的城市，还有很多盏灯亮着</span></p>
+        <p class="prologue-stage" data-stage="2"><span class="prologue-hook">灯光背后，是 <strong>48.5%</strong> 的人睡不着的夜</span></p>
+        <div class="prologue-stage" data-stage="3">
+          <span class="hero-eyebrow"><i></i>2026 中国睡眠健康研究白皮书</span>
+          <p class="prologue-kpi"><span>6.97</span><span class="prologue-kpi-unit">小时</span></p>
+          <p class="prologue-kpi-label">夜间平均睡眠时长 · 距 7 小时目标只差 3 分钟</p>
+          <div class="prologue-actions">
+            <button class="btn-primary scroll-indicator" type="button" data-scroll-to="#hero">
+              开始看数据
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <button class="prologue-play" type="button" id="prologue-play">播放开场画面</button>
+          </div>
+        </div>
+      </div>
+      <div class="prologue-progress" aria-hidden="true">
+        <span>开场</span>
+        <span class="prologue-progress-bar"><i id="prologue-bar"></i></span>
+      </div>
+    </section>
+
+    <section id="hero" class="hero" aria-labelledby="hero-title">
+      <div class="hero-media" aria-hidden="true">
+        <img class="hero-photo" id="hero-photo" src="assets/starfield.jpg" alt="" draggable="false" decoding="async">
+      </div>
+      <canvas id="warp-canvas" aria-hidden="true"></canvas>
+      <div class="hero-vignette" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <div class="hero-lead">
+          <span class="hero-eyebrow"><i></i>2026 中国睡眠健康研究白皮书</span>
+          <h1 class="hero-title" id="hero-title" aria-label="2026中国睡眠健康研究白皮书">
+            <span class="char" style="--delay:0">2</span><span class="char" style="--delay:1">0</span><span class="char" style="--delay:2">2</span><span class="char" style="--delay:3">6</span><span class="char" style="--delay:4">中</span><span class="char" style="--delay:5">国</span><span class="char" style="--delay:6">睡</span><span class="char" style="--delay:7">眠</span><span class="char" style="--delay:8">健</span><span class="char" style="--delay:9">康</span><span class="char" style="--delay:10">研</span><span class="char" style="--delay:11">究</span><span class="char" style="--delay:12">白</span><span class="char" style="--delay:13">皮</span><span class="char" style="--delay:14">书</span>
+          </h1>
+          <p class="hero-deck">夜间平均睡眠时长回升到 <strong>6.97 小时</strong>，但仍有 <strong>48.5%</strong> 的人被入睡焦虑困扰。向下滚动，六组数据会随你的节奏逐层展开：人群画像、午睡节律、健康风险与地域差异，最终还原中国人真实的睡眠现状。</p>
+          <div class="hero-actions">
+            <button class="btn-primary scroll-indicator" type="button" data-scroll-to="#cover-01">
+              开始阅读
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <span class="hero-source">数据来源：中国睡眠研究会 × 华为运动健康，2026</span>
+          </div>
+        </div>
+        <div class="hero-kpi">
+          <div>
+            <div class="hero-kpi-number"><span id="hero-count">6.97</span><span class="hero-kpi-unit">h</span></div>
+            <div class="hero-kpi-label">夜间平均睡眠时长</div>
+            <span class="delta delta-up">较上年 +7 min</span>
+          </div>
+          <dl class="hero-kpi-list">
+            <div><dt>平均入睡时间</dt><dd>00:10</dd></div>
+            <div><dt>睡眠焦虑比例</dt><dd>48.5%</dd></div>
+            <div><dt>存在睡眠困扰</dt><dd>65%</dd></div>
+          </dl>
+        </div>
+      </div>
+      <div class="scroll-cue" aria-hidden="true">
+        <span class="scroll-cue-line"></span>
+        <span>SCROLL</span>
+      </div>
+    </section>
+
+    <section class="cover" id="cover-01" data-cover-variant="default" aria-labelledby="cover-01-title">
+      <div class="cover-track" data-cover-track>
+        <div class="cover-sticky">
+          <div class="cover-photo-echo" aria-hidden="true"></div>
+          <div class="cover-photo" aria-hidden="true"></div>
+          <div class="cover-scrim" aria-hidden="true"></div>
+          <div class="cover-inner">
+            <span class="cover-eyebrow">Part 01</span>
+            <div class="cover-num" aria-hidden="true">01</div>
+            <h2 class="cover-title" id="cover-01-title">睡眠时长，回来了吗</h2>
+            <p class="cover-sub">6.97 小时，距离 7 小时目标只差 3 分钟。这是一次真正的回升，还是自我报告的乐观？先看四个最硬的数字。</p>
+            <div class="cover-meta">
+              <span class="cover-chip">夜间平均 6.97h</span>
+              <span class="cover-chip">入睡 00:10</span>
+              <span class="cover-chip">焦虑 48.5%</span>
+              <span class="cover-chip">困扰 65%</span>
+            </div>
+          </div>
+          <div class="cover-progress" aria-hidden="true"><span class="cover-progress-bar"><span></span></span><span data-cover-readout>0%</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboard" aria-labelledby="dashboard-heading">
+      <div class="section-inner">
+        <header class="section-header" id="dashboard-header">
+          <span class="section-index">核心睡眠指标</span>
+          <h2 class="section-title" id="dashboard-heading">四个数字，概括一夜</h2>
+          <p class="section-desc">夜间平均睡眠时长 6.97 小时，距离 7 小时目标只差 3 分钟；但 48.5% 的受访者存在入睡焦虑，65% 近一年出现过睡眠困扰。</p>
+        </header>
+        <div class="dashboard-grid">
+          <article class="card card-pad dash-card dash-card--wide card--interactive rise" id="ring-card" role="button" tabindex="0" aria-label="夜间平均睡眠时长 6.97 小时，较上年增加 7 分钟。激活可切换为趋势折线图。">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">夜间平均睡眠时长</h3>
+                <p class="card-sub">6.97h / 7h 目标 · 点击切换趋势视图</p>
+              </div>
+              <span class="delta delta-up">较上年 +7 min</span>
+            </div>
+            <div class="chart dash-chart" id="ring-gauge-chart" data-chart role="img" aria-label="环形仪表盘：夜间平均睡眠时长 6.97 小时，占 7 小时目标的 99.6%。"></div>
+          </article>
+          <article class="card card-pad dash-card rise">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">平均入睡时间</h3>
+                <p class="card-sub">00:10 · 较上年提前 8 分钟</p>
+              </div>
+              <span class="delta delta-up">熬夜趋势改善</span>
+            </div>
+            <div class="chart dash-chart" id="clock-gauge-chart" data-chart role="img" aria-label="表盘：平均入睡时间 00:10，较上年提前 8 分钟。"></div>
+          </article>
+          <article class="card card-pad dash-card rise">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">睡眠焦虑比例</h3>
+                <p class="card-sub">自我报告存在入睡焦虑</p>
+              </div>
+              <span class="delta delta-neutral">48.5% 受访者</span>
+            </div>
+            <div class="chart dash-chart" id="liquid-fill-chart" data-chart role="img" aria-label="液位图：48.5% 的受访者存在睡眠焦虑。"></div>
+          </article>
+          <article class="card card-pad dash-card dash-card--wide rise">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">睡眠障碍人群</h3>
+                <p class="card-sub">近一年出现睡眠困扰 · 每 100 人中有 65 人</p>
+              </div>
+              <span class="delta delta-neutral">65 / 100</span>
+            </div>
+            <div class="people-body">
+              <div class="people-meta">
+                <div class="people-value" aria-hidden="true">65%</div>
+                <p class="people-label">存在睡眠障碍或相关困扰</p>
+              </div>
+              <div class="people-grid" id="people-grid" role="img" aria-label="100 个方格中有 65 个被点亮，表示 65% 的受访者存在睡眠障碍或相关困扰。"></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="cover" id="cover-02" data-cover-variant="dawn" aria-labelledby="cover-02-title">
+      <div class="cover-track" data-cover-track>
+        <div class="cover-sticky">
+          <div class="cover-photo-echo" aria-hidden="true"></div>
+          <div class="cover-photo" aria-hidden="true"></div>
+          <div class="cover-scrim" aria-hidden="true"></div>
+          <div class="cover-inner">
+            <span class="cover-eyebrow">Part 02</span>
+            <div class="cover-num" aria-hidden="true">02</div>
+            <h2 class="cover-title" id="cover-02-title">同一片夜色，不同的作息</h2>
+            <p class="cover-sub">大学生睡得最长却最不规律，中年人夜醒最多，老年人最规律却睡得最短。切换人群，看三种人生阶段的睡眠画像。</p>
+            <div class="cover-meta">
+              <span class="cover-chip">大学生 · 熬夜型最多</span>
+              <span class="cover-chip">中年人 · 夜醒突出</span>
+              <span class="cover-chip">老年人 · 规律性 92 分</span>
+            </div>
+          </div>
+          <div class="cover-progress" aria-hidden="true"><span class="cover-progress-bar"><span></span></span><span data-cover-readout>0%</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="personas" aria-labelledby="personas-heading">
+      <div class="section-inner">
+        <header class="section-header" id="personas-header">
+          <span class="section-index">人群画像</span>
+          <h2 class="section-title" id="personas-heading">不同人群睡眠画像</h2>
+          <p class="section-desc">大学生睡得最长却最不规律，中年人夜醒次数最多，老年人入睡时间最固定但睡眠时长偏短。</p>
+        </header>
+        <div class="persona-tabs" role="tablist" aria-label="选择人群">
+          <button class="persona-tab active" type="button" role="tab" id="tab-student" data-key="student" aria-selected="true" aria-controls="panel-student" tabindex="0">大学生</button>
+          <button class="persona-tab" type="button" role="tab" id="tab-middle" data-key="middle" aria-selected="false" aria-controls="panel-middle" tabindex="-1">中年人</button>
+          <button class="persona-tab" type="button" role="tab" id="tab-elder" data-key="elder" aria-selected="false" aria-controls="panel-elder" tabindex="-1">老年人</button>
+        </div>
+        <div class="persona-panels">
+          <div class="persona-panel active" id="panel-student" role="tabpanel" aria-labelledby="tab-student">
+            <div class="persona-grid">
+              <article class="card card-pad persona-chart-card">
+                <h3 class="persona-chart-title">睡眠指标得分</h3>
+                <p class="persona-chart-sub">睡眠时长指标突出，规律性相对薄弱</p>
+                <div class="chart" id="student-bar-chart" data-chart style="height:300px" role="img" aria-label="横向柱状图：大学生睡眠指标得分，睡眠时长 80 分最高，打鼾频率 30 分最低。"></div>
+              </article>
+              <article class="card card-pad persona-chart-card">
+                <h3 class="persona-chart-title">作息类型分布</h3>
+                <p class="persona-chart-sub">熬夜型占比最高，规律型不足 30%</p>
+                <div class="chart" id="student-rose-chart" data-chart style="height:300px" role="img" aria-label="玫瑰图：大学生作息类型分布，熬夜型占比最高，规律型不足三成。"></div>
+              </article>
+            </div>
+            <article class="card card-pad persona-chart-card" style="margin-top:20px">
+              <h3 class="persona-chart-title">大学生作息时间分布</h3>
+              <p class="persona-chart-sub">入睡与起床时间散点密度 · 21% 凌晨 2 点后入睡 · 32% 上午 9 点后起床</p>
+              <div class="chart" id="student-scatter-chart" data-chart style="height:420px" role="img" aria-label="散点密度图：大学生入睡时间集中在 23 点至凌晨 2 点，21% 在凌晨 2 点后入睡；起床时间集中在 7 至 9 点，32% 在 9 点后起床。"></div>
+            </article>
+          </div>
+          <div class="persona-panel" id="panel-middle" role="tabpanel" aria-labelledby="tab-middle">
+            <div class="persona-grid">
+              <article class="card card-pad persona-chart-card">
+                <h3 class="persona-chart-title">睡眠指标得分</h3>
+                <p class="persona-chart-sub">夜醒次数突出，睡眠深度偏低</p>
+                <div class="chart" id="middle-bar-chart" data-chart style="height:300px" role="img" aria-label="横向柱状图：中年人睡眠指标得分，规律性 88 分最高，睡眠时长 50 分最低。"></div>
+              </article>
+              <article class="card card-pad persona-chart-card">
+                <h3 class="persona-chart-title">作息规律程度</h3>
+                <p class="persona-chart-sub">约 40% 中年人保持规律作息</p>
+                <div class="chart" id="middle-rose-chart" data-chart style="height:300px" role="img" aria-label="玫瑰图：中年人作息类型分布，规律型占比约四成。"></div>
+              </article>
+            </div>
+          </div>
+          <div class="persona-panel" id="panel-elder" role="tabpanel" aria-labelledby="tab-elder">
+            <div class="persona-grid">
+              <article class="card card-pad persona-chart-card">
+                <h3 class="persona-chart-title">睡眠指标得分</h3>
+                <p class="persona-chart-sub">夜醒次数突出，睡眠时长偏短</p>
+                <div class="chart" id="elder-bar-chart" data-chart style="height:300px" role="img" aria-label="横向柱状图：老年人睡眠指标得分，规律性 92 分最高，睡眠深度 40 分最低。"></div>
+              </article>
+              <article class="card card-pad persona-chart-card">
+                <h3 class="persona-chart-title">作息规律程度</h3>
+                <p class="persona-chart-sub">约 45% 老年人保持规律作息</p>
+                <div class="chart" id="elder-rose-chart" data-chart style="height:300px" role="img" aria-label="玫瑰图：老年人作息类型分布，规律型占比约四成五。"></div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cover" id="cover-03" data-cover-variant="default" aria-labelledby="cover-03-title">
+      <div class="cover-track" data-cover-track>
+        <div class="cover-sticky">
+          <div class="cover-photo-echo" aria-hidden="true"></div>
+          <div class="cover-photo" aria-hidden="true"></div>
+          <div class="cover-scrim" aria-hidden="true"></div>
+          <div class="cover-inner">
+            <span class="cover-eyebrow">Part 03</span>
+            <div class="cover-num" aria-hidden="true">03</div>
+            <h2 class="cover-title" id="cover-03-title">中午那一觉，睡多久才对</h2>
+            <p class="cover-sub">30–60 分钟是最佳午睡窗口；农村午睡率 52%，比城市的 38% 高出 14 个百分点。午睡不是越久越补。</p>
+            <div class="cover-meta">
+              <span class="cover-chip">最佳窗口 30–60min</span>
+              <span class="cover-chip">占 42%</span>
+              <span class="cover-chip">城乡差 14pp</span>
+            </div>
+          </div>
+          <div class="cover-progress" aria-hidden="true"><span class="cover-progress-bar"><span></span></span><span data-cover-readout>0%</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="nap" aria-labelledby="nap-heading">
+      <div class="section-inner">
+        <header class="section-header" id="nap-header">
+          <span class="section-index">午睡节奏</span>
+          <h2 class="section-title" id="nap-heading">午睡习惯与节奏</h2>
+          <p class="section-desc">30–60 分钟是最佳午睡窗口，占比 42%；农村受访者的午睡率 52%，比城市的 38% 高出 14 个百分点。</p>
+        </header>
+        <div class="nap-grid">
+          <article class="card card-pad nap-card rise">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">午睡时长分布</h3>
+                <p class="card-sub">30–60min 为最佳午睡窗口，占比 42%</p>
+              </div>
+            </div>
+            <div class="chart" id="nap-funnel-chart" data-chart style="height:420px" role="img" aria-label="漏斗图：午睡时长分布，30 到 60 分钟占 42%，不足 30 分钟占 25%，60 到 120 分钟占 20%，超过 120 分钟占 13%。"></div>
+          </article>
+          <article class="card card-pad nap-card rise">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">城乡午睡率对比</h3>
+                <p class="card-sub">城市居民午睡率略低于农村</p>
+              </div>
+            </div>
+            <div class="chart" id="nap-compare-chart" data-chart style="height:420px" role="img" aria-label="柱状图：午睡率城市 38%，农村 52%。"></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="cover" id="cover-04" data-cover-variant="ink" aria-labelledby="cover-04-title">
+      <div class="cover-track" data-cover-track>
+        <div class="cover-sticky">
+          <div class="cover-photo-echo" aria-hidden="true"></div>
+          <div class="cover-photo" aria-hidden="true"></div>
+          <div class="cover-scrim" aria-hidden="true"></div>
+          <div class="cover-inner">
+            <span class="cover-eyebrow">Part 04</span>
+            <div class="cover-num" aria-hidden="true">04</div>
+            <h2 class="cover-title" id="cover-04-title">欠下的睡眠，会用风险偿还</h2>
+            <p class="cover-sub">中年人每晚睡不足 5 小时，风险指数达 46.2%。睡眠不足还会沿着肥胖、呼吸暂停、疲劳驾驶几条路径，推高职业伤害与交通事故。</p>
+            <div class="cover-meta">
+              <span class="cover-chip">最高风险 46.2%</span>
+              <span class="cover-chip">职业伤害 +29–34%</span>
+              <span class="cover-chip">交通事故 +62%</span>
+            </div>
+          </div>
+          <div class="cover-progress" aria-hidden="true"><span class="cover-progress-bar"><span></span></span><span data-cover-readout>0%</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="risk" aria-labelledby="risk-heading">
+      <div class="section-inner">
+        <header class="section-header" id="risk-header">
+          <span class="section-index">健康风险</span>
+          <h2 class="section-title" id="risk-heading">睡眠不足的健康风险</h2>
+          <p class="section-desc">中年人每晚睡不足 5 小时的风险最高，达 46.2%；睡眠不足还会通过肥胖、呼吸暂停等路径，推高职业伤害与交通事故风险。</p>
+        </header>
+        <div class="risk-grid">
+          <article class="card card-pad risk-card rise">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">睡眠时长 × 年龄风险矩阵</h3>
+                <p class="card-sub">中年 + 睡眠 &lt; 5h 风险最高 46.2%</p>
+              </div>
+            </div>
+            <div class="chart" id="risk-heatmap-chart" data-chart style="height:360px" role="img" aria-label="热力图：睡眠时长与年龄的风险矩阵，中年且睡眠不足 5 小时的风险指数最高，为 46.2%。"></div>
+          </article>
+          <article class="card card-pad risk-card rise">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">呼吸暂停风险 · 年龄 × 性别</h3>
+                <p class="card-sub">66 岁以上男性风险达 26%</p>
+              </div>
+            </div>
+            <div class="chart" id="risk-stack-chart" data-chart style="height:360px" role="img" aria-label="堆叠柱状图：呼吸暂停风险随年龄上升，66 岁以上男性达 26%，女性 12%。"></div>
+          </article>
+        </div>
+        <div class="impact-band">
+          <div class="impact-card"><div class="elastic"><div class="impact-value">+29–34%</div><div class="impact-label">职业伤害风险上升</div></div></div>
+          <div class="impact-card"><div class="elastic"><div class="impact-value">+62%</div><div class="impact-label">交通事故风险上升</div></div></div>
+          <div class="impact-card"><div class="elastic"><div class="impact-value">&gt;2.4 亿</div><div class="impact-label">年经济损失（美元）</div></div></div>
+        </div>
+        <article class="card card-pad risk-card rise" style="margin-top:20px">
+          <div class="card-head">
+            <div>
+              <h3 class="card-title">睡眠风险因果链</h3>
+              <p class="card-sub">睡眠不足如何逐级放大健康与社会成本</p>
+            </div>
+          </div>
+          <div class="chart" id="risk-sankey-chart" data-chart style="height:420px" role="img" aria-label="桑基图：睡眠不足经由肥胖、呼吸暂停、疲劳驾驶、工作效率下降，进一步推高职业伤害、交通事故与年经济损失。"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="cover" id="cover-05" data-cover-variant="default" aria-labelledby="cover-05-title">
+      <div class="cover-track" data-cover-track>
+        <div class="cover-sticky">
+          <div class="cover-photo-echo" aria-hidden="true"></div>
+          <div class="cover-photo" aria-hidden="true"></div>
+          <div class="cover-scrim" aria-hidden="true"></div>
+          <div class="cover-inner">
+            <span class="cover-eyebrow">Part 05</span>
+            <div class="cover-num" aria-hidden="true">05</div>
+            <h2 class="cover-title" id="cover-05-title">越往西部，睡得越沉</h2>
+            <p class="cover-sub">新疆平均 7.6 小时最长，香港只有 6.5 小时；北京、上海、香港入睡最晚。同一时区里，其实跑着好几套生物钟。</p>
+            <div class="cover-meta">
+              <span class="cover-chip">最长 新疆 7.6h</span>
+              <span class="cover-chip">最短 香港 6.5h</span>
+              <span class="cover-chip">最晚 香港 01:00</span>
+            </div>
+          </div>
+          <div class="cover-progress" aria-hidden="true"><span class="cover-progress-bar"><span></span></span><span data-cover-readout>0%</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="map" aria-labelledby="map-heading">
+      <div class="section-inner">
+        <header class="section-header" id="map-header">
+          <span class="section-index">睡眠地图</span>
+          <h2 class="section-title" id="map-heading">中国睡眠地图</h2>
+          <p class="section-desc">西部省份普遍睡得更早、更久，新疆 7.6 小时最长；北京、上海、香港的入睡时间最晚，香港仅 6.5 小时。</p>
+        </header>
+        <div class="map-grid">
+          <article class="card card-pad map-card rise">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">各省平均睡眠时长</h3>
+                <p class="card-sub">颜色越偏绿时长越长，越偏红越短</p>
+              </div>
+            </div>
+            <div class="map-legend">
+              <span>6.5h</span><span class="map-legend-bar" aria-hidden="true"></span><span>7.6h</span>
+            </div>
+            <div class="map-loading" id="map-loading" role="status">
+              <span class="map-dots"><span class="breath-dot"></span><span class="breath-dot"></span><span class="breath-dot"></span></span>
+              <span class="map-loading-text">正在渲染地图数据…</span>
+            </div>
+            <div class="chart" id="china-map-chart" data-chart style="height:470px;min-height:420px;margin-top:14px" role="img" aria-label="中国地图：各省平均睡眠时长，新疆 7.6 小时最长，香港 6.5 小时最短。"></div>
+            <div class="map-fallback" id="map-fallback" hidden>
+              <strong>地图数据未能加载。</strong>各省平均睡眠时长（小时）：新疆 7.6、西藏 7.5、内蒙古 7.4、青海 7.4、云南 7.3、山西 7.2、四川 7.1、北京 6.7、上海 6.6、香港 6.5。
+            </div>
+          </article>
+          <article class="card card-pad map-card rise">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">重点城市对比</h3>
+                <p class="card-sub">北京 / 上海 / 广州 / 成都</p>
+              </div>
+            </div>
+            <div class="chart" id="city-radar-chart" data-chart style="height:470px;min-height:420px" role="img" aria-label="雷达图：北京、上海、广州、成都四城在睡眠时长、入睡时间、规律性、深睡占比与焦虑程度五个维度的对比。"></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="cover" id="cover-06" data-cover-variant="dawn" aria-labelledby="cover-06-title">
+      <div class="cover-track" data-cover-track>
+        <div class="cover-sticky">
+          <div class="cover-photo-echo" aria-hidden="true"></div>
+          <div class="cover-photo" aria-hidden="true"></div>
+          <div class="cover-scrim" aria-hidden="true"></div>
+          <div class="cover-inner">
+            <span class="cover-eyebrow">Part 06</span>
+            <div class="cover-num" aria-hidden="true">06</div>
+            <h2 class="cover-title" id="cover-06-title">把睡眠，还给自己</h2>
+            <p class="cover-sub">2020 到 2026 年，夜间平均睡眠时长从 6.62 小时回到 6.97 小时。趋势在好转，但还差最后一步——先做一次 3 分钟自测，再决定今晚几点放下手机。</p>
+            <div class="cover-meta">
+              <span class="cover-chip">6 年回升 0.35h</span>
+              <span class="cover-chip">3 分钟自测</span>
+              <span class="cover-chip">下一步：睡前建议</span>
+            </div>
+          </div>
+          <div class="cover-progress" aria-hidden="true"><span class="cover-progress-bar"><span></span></span><span data-cover-readout>0%</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="trend" aria-labelledby="trend-heading">
+      <div class="section-inner">
+        <header class="section-header" id="trend-header">
+          <span class="section-index">趋势与自测</span>
+          <h2 class="section-title" id="trend-heading">睡眠趋势与自测</h2>
+          <p class="section-desc">2020 至 2026 年，夜间平均睡眠时长由 6.62 小时回升至 6.97 小时。回升是真的，但距离健康线仍有一段路。</p>
+        </header>
+        <article class="card card-pad trend-chart-card rise">
+          <div class="chart" id="trend-line-chart" data-chart style="height:340px" role="img" aria-label="折线图：2020 至 2026 年夜间平均睡眠时长由 6.62 小时回升至 6.97 小时。"></div>
+        </article>
+        <article class="card quiz-card rise" id="quiz" aria-labelledby="quiz-heading">
+          <h3 class="persona-chart-title" id="quiz-heading" style="font-size:18px;margin-bottom:20px">3 分钟睡眠自测</h3>
+          <div id="quiz-container"></div>
+          <p class="quiz-result" id="quiz-result" role="status" aria-live="polite" hidden></p>
+          <div class="quiz-actions">
+            <button class="btn-ghost" type="button" id="quiz-reset">重新测试</button>
+          </div>
+        </article>
+
+        <div class="bridge">
+          <div>
+            <h3 class="bridge-title">看完数据，去房间里找今天的做法</h3>
+            <p class="bridge-desc">白皮书回答「我们睡得怎么样」，<em>睡前建议房间</em>回答「今晚可以怎么做」。两个页面共用同一套夜色与羊皮纸设计变量，点开即可在同一个世界观里继续探索。</p>
+          </div>
+          <a class="bridge-cta" href="小建议页面/睡眠建议界面.html">
+            进入睡前建议房间
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+
+        <div class="share-bar">
+          <button class="share-btn btn-ghost" type="button" onclick="sharePage('weibo')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+            分享到微博
+          </button>
+          <button class="share-btn btn-ghost" type="button" onclick="sharePage('copy')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            复制链接
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>数据来源：<a href="https://www.schca.org.cn/newsinfo/11119434.html" target="_blank" rel="noopener noreferrer">中国睡眠研究会 × 华为运动健康，2026</a></p>
+    <p class="footer-note">本报告基于公开调研数据与模拟数据生成，图表数值用于健康科普示意，仅供健康科普参考。</p>
+    <p class="footer-note">图表库与地图数据已本地化，可离线打开。</p>
+  </footer>
+
+  <script src="vendor/echarts.min.js"></script>
+  <script src="vendor/echarts-liquidfill.min.js"></script>
+  <script src="vendor/china-map.js"></script>
+  <script>
+  // 提前给 html 打标记，避免滚动动画未就绪时内容闪一下才出现
+  document.documentElement.classList.add('js-motion');
+  // 序章在播时先收起章节导航；滚过序章后由滚动循环把它放回来
+  if (document.getElementById('prologue') && (window.scrollY || 0) < window.innerHeight * .5) {
+    document.documentElement.classList.add('prologue-lock');
+  }
+  </script>
+  <script src="assets/scroll-story.js"></script>
+</body>
+</html>

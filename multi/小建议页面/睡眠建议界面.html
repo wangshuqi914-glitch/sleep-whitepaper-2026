@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>2026 中国睡眠白皮书 · 互动房间</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============================================================
+     stage：铺满屏幕，比例锁死 16:9（与背景图一致）
+     舞台内部所有坐标都是百分比，等比缩放不会错位
+     ============================================================ -->
+<div id="stage" class="stage" data-env="day">
+
+  <!-- ---------- 层级 1：背景层（三张图叠放，只用 opacity 切换） ---------- -->
+  <div class="layer layer--bg" id="layerBg">
+    <img src="assets/bg-day.jpg"       alt="" class="bg" id="bgDay"       data-on="true">
+    <img src="assets/bg-night-on.jpg"  alt="" class="bg" id="bgNightOn">
+    <img src="assets/bg-night-off.jpg" alt="" class="bg" id="bgNightOff">
+  </div>
+
+  <!-- ---------- 层级 2：物品层（每个物品本身就是按钮） ----------
+       顺序很重要：窗户 / 台灯是"画在背景图上的热区"，放在最前面（最底层），
+       后面的 PNG 物品才会盖在它们上面 —— 否则窗户那块 30%x42% 的大热区
+       会把眼罩、褪黑素的点击抢走。 -->
+  <div class="layer layer--items" id="layerItems">
+
+    <!-- 窗户：窗和窗帘都在背景图里，没有独立 PNG。
+         热区 = 窗户实际范围（30% x 42%，远大于 44x44px），
+         点击只做一件事：白天 / 黑夜互切 -->
+    <div class="item item--window" id="wrap-window" data-item="window" role="button" tabindex="0"
+         aria-label="窗户，点击切换白天黑夜"></div>
+
+    <!-- 台灯：灯就画在三张背景图里，不需要任何 PNG、不需要光晕贴图。
+         夜晚点它 = 在 bg-night-on.jpg 与 bg-night-off.jpg 之间切换（0.6s 交叉淡入），
+         这两张图的差别就是灯的开与关。
+         热区 = 灯在画面上的实际范围，见 style.css 的 .item--lamp -->
+    <div class="item item--lamp" id="wrap-lamp" data-item="lamp" role="button" tabindex="0"
+         aria-label="台灯，点击开关灯"></div>
+
+    <!-- 枕头 wrapper：点击 = 原地摇晃 + 米黄卡片（不放大） -->
+    <div class="item item--pillow" id="wrap-pillow" data-item="pillow" role="button" tabindex="0"
+         aria-label="枕头，点击查看助眠建议">
+      <img src="assets/pillow.png" alt="枕头" class="item-img" draggable="false">
+    </div>
+
+    <!-- 褪黑素 wrapper：点击 = 放大到屏幕中央 + 米黄卡片 -->
+    <div class="item item--melatonin" id="wrap-melatonin" data-item="melatonin" role="button" tabindex="0"
+         aria-label="褪黑素，点击查看服用建议">
+      <img src="assets/melatonin.png" alt="褪黑素" class="item-img" draggable="false">
+    </div>
+
+    <!-- 眼罩 wrapper：点击 = 放大到屏幕中央 + 普通卡片 -->
+    <div class="item item--eyemask" id="wrap-eyemask" data-item="eyemask" role="button" tabindex="0"
+         aria-label="眼罩，点击查看遮光建议">
+      <img src="assets/eyemask.png" alt="眼罩" class="item-img" draggable="false">
+    </div>
+
+    <!-- 书本 wrapper：点击 = 弹出"书本弹出"大图 + 普通卡片 -->
+    <div class="item item--book" id="wrap-book" data-item="book" role="button" tabindex="0"
+         aria-label="书本，点击查看睡前阅读数据">
+      <img src="assets/book.png" alt="书本" class="item-img" draggable="false">
+    </div>
+
+  </div>
+
+  <!-- ---------- 层级 3：动画层（放大展示 / 书本弹出，独立于物品层） ---------- -->
+  <div class="layer layer--fx" id="layerFx">
+    <!-- 书本：点击后把"书本弹出.png"送到屏幕中央 -->
+    <img src="assets/book-open.png" alt="" class="fx-book" id="fxBook" draggable="false">
+  </div>
+
+  <div class="stage-wrap">
+    <span class="hint">点击房间里的物品，看看 2026 中国睡眠白皮书怎么说</span>
+  </div>
+
+  <!-- 返回数据可视化页：两个页面共用同一套设计变量，入口做成羊皮纸小牌 -->
+  <a class="back-to-report" href="../睡眠白皮书-滚动版.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+    回到数据报告
+  </a>
+
+  <!-- ---------- 字幕条：夜晚点击台灯时出现（在舞台内，随房间一起缩放） ---------- -->
+  <div class="caption" id="caption" role="status" aria-live="polite">
+    <div class="caption__text" id="captionText"></div>
+    <button class="caption__close" id="captionClose" type="button" aria-label="关闭字幕">×</button>
+  </div>
+
+  <!-- 提示条（台灯白天点击提示） -->
+  <div class="toast" id="toast" role="status"></div>
+
+</div><!-- /#stage -->
+
+<!-- ============================================================
+     舞台之外：遮罩 + 弹层
+     必须放在 #stage 外面。舞台带 transform，会把 position:fixed 的
+     后代"捕获"成舞台坐标系，再被舞台的 overflow:hidden 裁掉 ——
+     窗口不是 16:9 时（手机竖屏尤其明显）卡片会被上下切掉。
+     放到 body 下才是真正的全屏居中。
+     ============================================================ -->
+<div class="mask" id="mask" aria-hidden="true"></div>
+
+<div class="modal-host" id="modalHost">
+  <!-- 普通卡片：羊皮纸底（paper-card），内容包在 .card__inner 里做垂直居中 -->
+  <div class="card card--normal" id="cardNormal" role="dialog" aria-modal="true" aria-labelledby="normalTitle">
+    <button class="card__close" id="closeNormal" aria-label="关闭">×</button>
+    <div class="card__inner">
+      <div class="card__icon" id="normalIcon"></div>
+      <h2 class="card__title" id="normalTitle"></h2>
+      <div class="card__body" id="normalBody"></div>
+    </div>
+  </div>
+  <!-- 米黄色卡片（褪黑素 / 枕头共用）：同样换成羊皮纸底 -->
+  <div class="card card--cream" id="cardCream" role="dialog" aria-modal="true" aria-labelledby="creamTitle">
+    <button class="card__close" id="closeCream" aria-label="关闭">×</button>
+    <div class="card__inner">
+      <div class="card__icon" id="creamIcon"></div>
+      <h2 class="card__title" id="creamTitle"></h2>
+      <div class="card__body" id="creamBody"></div>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
